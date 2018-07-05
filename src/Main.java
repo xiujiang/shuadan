@@ -20,6 +20,7 @@ public class Main {
     String sercet = "";
     String symbol = "";
     String amount = "";
+    String orderId="";
     public static void main(String[] args) {
         Main main = new Main();
         main.trade();
@@ -31,8 +32,7 @@ public class Main {
 //        String sercet = "5b3af0219332758669cc32c6266285f41d390406";
 
         while (true) {
-            System.out.println(b);
-            System.out.println(apiKey+"--"+sercet+"---"+symbol);
+            logArea.append("开始交易");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -43,7 +43,7 @@ public class Main {
             }
             logArea.append("\n"+"开始交易");
             try {
-                TradeService tradeService = new TradeService();
+                AaCoinService tradeService = new AaCoinService();
                 OrderInfoBean orderInfoBean = new OrderInfoBean();
                 orderInfoBean.setApiKey(apiKey);
                 orderInfoBean.setSecret(sercet);
@@ -64,15 +64,26 @@ public class Main {
                 orderInfoBean.setBuyOrSell("1");
                 Map<String, String> tradeMap = tradeService.trade(orderInfoBean);
                 if ("00".equals(tradeMap.get("code"))) {
-
+                    orderId = tradeMap.get("orderId");
                     System.out.println(tradeMap);
                     logArea.append("\n"+"买入成功，数量" + amount + "价格为：" + orderInfoBean.getPrice());
+                    while(true){
+                        orderInfoBean.setOrderId(orderId);
+                        Map<String, String> orderpendingMap = tradeService.orderpending(orderInfoBean);
+                        Thread.sleep(100);
+                        if("98".equals(orderpendingMap.get("code"))){
+                            continue;
+                        }else if("00".equals(orderpendingMap.get("code"))){
+                            break;
+                        }
+                    }
                     System.out.println("买入成功，数量" + amount + "价格为：" + orderInfoBean.getPrice());
                     //下卖单
                     orderInfoBean.setBuyOrSell("2");
                     Map<String, String> sellTradeMap = tradeService.trade(orderInfoBean);
                     if ("00".equals(sellTradeMap.get("code"))) {
                         logArea.append("\n"+"卖出成功，数量" + amount + "价格为：" + orderInfoBean.getPrice());
+                        orderId = "";
                         System.out.println(sellTradeMap);
                     } else {
                         logArea.append("\n"+"卖出失败:" + sellTradeMap.get("msg"));
@@ -124,7 +135,8 @@ public class Main {
         jp1.add(symbolLabel);
         jp1.add(symbolTextField);
         jp2.add(logArea);
-
+        JScrollPane scrollPane_1 = new JScrollPane();
+        jp2.add(scrollPane_1);
         jp3.add(jb1);
         jp3.add(jb2);
 
@@ -132,11 +144,13 @@ public class Main {
         jf.add(jp1, BorderLayout.NORTH);
         jf.add(jp2, BorderLayout.CENTER);
         jf.add(jp3, BorderLayout.SOUTH);
+        scrollPane_1.setViewportView(logArea);
         event();
         //设置窗口属性
         jf.setSize(600, 400);
         jf.setLocation(700, 500);
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         jf.setResizable(false);
         jf.setVisible(true);
     }
