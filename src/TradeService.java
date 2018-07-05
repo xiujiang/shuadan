@@ -39,12 +39,18 @@ public class TradeService {
         String response = HttpUtils2.postJson("https://api.coinpark.cc/v1/mdata",json);
         System.out.println(response);
         Map<String,String> maps = new HashMap<String, String>();
+        if(response == null){
+            maps.put("code","98");
+            maps.put("msg","查询超时");
+            return maps;
+        }
         JSONObject respJson = JSONObject.parseObject(response);
         JSONArray jsonArray = respJson.getJSONArray("result");
         if(jsonArray != null && jsonArray.size() > 0){
             JSONObject jsonObject = JSONObject.parseObject(jsonArray.get(0).toString());
             maps.put("code","00");
-            maps.put("price",jsonObject.get("last").toString());
+            JSONObject priceJson = JSONObject.parseObject(jsonObject.getString("result"));
+            maps.put("price",priceJson.get("last").toString());
         }else{
             maps.put("code", "10");
             maps.put("msg",respJson.toJSONString());
@@ -127,10 +133,15 @@ public class TradeService {
         json.put("apikey",orderInfoBean.getApiKey());
         String sign = SignUtils.coinParkSign(json.getString("cmds"),orderInfoBean.getSecret());
         json.put("sign",sign);
-        System.out.println(json.toJSONString());
+        System.out.println("用户下单:"+json.toJSONString());
         String response = HttpUtils2.postJson("https://api.coinpark.cc/v1/orderpending",json);
         System.out.println(response);
         Map<String,String> maps = new HashMap<String, String>();
+        if(response == null){
+            maps.put("code","98");
+            maps.put("msg","下单超时");
+            return maps;
+        }
         JSONObject respJson = JSONObject.parseObject(response);
         maps.put("code", "00");
         maps.put("orderId",respJson.get("result").toString());

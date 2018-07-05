@@ -166,7 +166,6 @@ public class HttpUtils2 {
 		List<NameValuePair> parameters = new ArrayList<NameValuePair>(0);
 		if (json != null && !"".equals(json)) {
 			Iterator<String> it = json.keySet().iterator();
-			System.out.println("11111111111111111111111111111111111"+it.toString());
 			while (it.hasNext()) {
 				String next = it.next();
 				parameters.add(new BasicNameValuePair(next, String.valueOf(json.get(next))));
